@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" data-t="graphite">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>TallyRoll</title>
+<meta name="theme-color" content="#14171C" id="tc">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TallyRoll">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+html[data-t="graphite"]{--bg:#14171C;--paper:#EDEAE2;--ink:#3A3F4A;--edge:#BDB8AA;--disp:#fff;--pend:#FF9A5C;--err:#FF6B6B;--pill:#2B3038;--pill-t:#F2F4F7;
+--d:#2B3038;--d-t:#F2F4F7;--d-ed:#0D0F12;--d-hi:#454C58;--f:#4A5260;--f-t:#fff;--f-ed:#232830;--f-hi:#6A7384;--o:#FF7A2F;--o-t:#fff;--o-ed:#B04810;--o-hi:#FFA066;--e:#2EC4FF;--e-t:#06222E;--e-ed:#0F7DA8;--e-hi:#7FDDFF}
+html[data-t="ocean"]{--bg:#06263A;--paper:#F2F7F9;--ink:#1E4254;--edge:#B7CBD3;--disp:#fff;--pend:#FF9C92;--err:#FF8A8A;--pill:#0E4A68;--pill-t:#E8F6FC;
+--d:#0E4A68;--d-t:#E8F6FC;--d-ed:#072F44;--d-hi:#2A7A9E;--f:#1F7A8C;--f-t:#fff;--f-ed:#0F4A57;--f-hi:#4FB0C4;--o:#FF6F61;--o-t:#fff;--o-ed:#B13C31;--o-hi:#FF9C92;--e:#FFD166;--e-t:#3A2A00;--e-ed:#B38A1F;--e-hi:#FFE3A0}
+html[data-t="cream"]{--bg:#EFE9DC;--paper:#fff;--ink:#3A3F4A;--edge:#D6CDB8;--disp:#1F2430;--pend:#5B6CFF;--err:#D6455D;--pill:#D9DEE8;--pill-t:#1F2430;
+--d:#fff;--d-t:#1F2430;--d-ed:#BFB6A0;--d-hi:#fff;--f:#D9DEE8;--f-t:#1F2430;--f-ed:#A3ABBD;--f-hi:#F0F3F8;--o:#5B6CFF;--o-t:#fff;--o-ed:#3140B8;--o-hi:#8F9BFF;--e:#FF5C8A;--e-t:#fff;--e-ed:#B02A57;--e-hi:#FF94B3}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{height:100%;margin:0;background:var(--bg);overscroll-behavior:none}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.app{height:100dvh;max-width:480px;margin:0 auto;display:flex;flex-direction:column;padding:calc(10px + env(safe-area-inset-top,0px)) 0 calc(14px + env(safe-area-inset-bottom,0px))}
+.hd{display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.hd b{color:var(--disp);font-size:20px}
+.pill{margin-left:6px;border:0;border-radius:14px;padding:7px 12px;background:var(--pill);color:var(--pill-t);font-size:12px;font-weight:600;cursor:pointer}
+.tape{position:relative;height:118px;margin:12px 20px 0;background:var(--paper);border-radius:8px;border-bottom:4px dashed var(--edge);box-shadow:0 10px 16px rgba(0,0,0,.35);overflow:hidden;flex:none}
+.lines{height:100%;overflow-y:auto;padding:12px;display:flex;flex-direction:column;justify-content:flex-end;font:14px/24px ui-monospace,Menlo,Consolas,monospace;color:var(--ink);text-align:right}
+.lines .empty{color:#9A9486;text-align:center;font-size:13px}
+.l{cursor:pointer}
+.clear{position:absolute;top:6px;left:10px;font-size:12px;color:#8A8478;text-decoration:underline;background:none;border:0;padding:0;cursor:pointer}
+.disp{flex:1;min-height:90px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;padding:0 24px 10px}
+.pend{font:20px ui-monospace,Menlo,Consolas,monospace;color:var(--pend);min-height:26px}
+.val{color:var(--disp);font-weight:300;font-size:72px;line-height:1.1;white-space:nowrap;text-shadow:0 4px 6px rgba(0,0,0,.35);transform-origin:bottom right}
+.val.err{color:var(--err);font-size:30px}
+.pad{flex:none;height:min(52dvh,430px);display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:14px 12px;padding:0 16px 8px}
+.k{border:0;border-top:3px solid var(--hi);border-radius:20px;font-size:clamp(24px,7vw,32px);font-weight:600;cursor:pointer;box-shadow:0 7px 0 var(--ed),0 12px 14px rgba(0,0,0,.35);transition:transform .06s,box-shadow .06s}
+.k:active{transform:translateY(5px);box-shadow:0 2px 0 var(--ed),0 4px 6px rgba(0,0,0,.3)}
+.digit{background:var(--d);color:var(--d-t);--hi:var(--d-hi);--ed:var(--d-ed)}
+.func{background:var(--f);color:var(--f-t);--hi:var(--f-hi);--ed:var(--f-ed)}
+.op{background:var(--o);color:var(--o-t);--hi:var(--o-hi);--ed:var(--o-ed)}
+.eq{background:var(--e);color:var(--e-t);--hi:var(--e-hi);--ed:var(--e-ed)}
+.op.on{box-shadow:0 7px 0 var(--ed),0 0 0 3px var(--disp)}
+@keyframes print{from{transform:translateY(16px) scaleY(.6);opacity:0}to{transform:none;opacity:1}}
+.l.new{animation:print .35s ease-out;transform-origin:bottom}
+@keyframes flip{from{transform:perspective(500px) rotateX(-75deg) scale(.85);opacity:0}to{transform:none;opacity:1}}
+.val.pop{animation:flip .4s cubic-bezier(.2,1.3,.4,1)}
+@media (prefers-reduced-motion:reduce){.l.new,.val.pop{animation:none}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#000c;color:#fff;padding:8px 14px;border-radius:14px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd"><b>TallyRoll</b><span><button class="pill" id="shr">Share</button><button class="pill" id="thm">Ocean</button></span></div>
+  <div class="tape"><button class="clear" id="clr" hidden>Clear tape</button><div class="lines" id="lines"></div></div>
+  <div class="disp"><div class="pend" id="pend">&nbsp;</div><div class="val" id="val">0</div></div>
+  <div class="pad" id="pad"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const MAX=12,KEY='tallyroll:v2';
+const THEMES={graphite:{next:'Ocean',bar:'#14171C'},ocean:{next:'Cream',bar:'#06263A'},cream:{next:'Graphite',bar:'#EFE9DC'}};
+let display='0',stored=null,op=null,fresh=true,err=false,tape=[],theme='graphite',anim=false;
+try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');if(Array.isArray(s.tape))tape=s.tape;if(THEMES[s.theme])theme=s.theme}catch(e){}
+const $=id=>document.getElementById(id);
+const fmt=n=>{if(!isFinite(n))return'Error';let s=parseFloat(n.toPrecision(MAX)).toString();if(s.length>MAX+2)s=n.toExponential(5);return s};
+const calc=(a,b,o)=>o==='+'?a+b:o==='−'?a-b:o==='×'?a*b:o==='÷'?a/b:b;
+const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)};
+const addTape=(a,o,b,r)=>{tape=[...tape,{text:`${fmt(a)} ${o} ${fmt(b)} = ${fmt(r)}`,result:fmt(r)}].slice(-50);anim=true};
+const showErr=()=>{vib([40,30,40]);display='Cannot divide by 0';stored=null;op=null;fresh=true;err=true};
+const resetAll=()=>{display='0';stored=null;op=null;fresh=true;err=false};
+const clearErr=()=>{stored=null;op=null;err=false;fresh=false};
+function digit(d){if(err){clearErr();display=d}else if(fresh){display=d;fresh=false}else if(display.replace(/[-.]/g,'').length<MAX)display=display==='0'?d:display+d}
+function dot(){if(err){clearErr();display='0.'}else if(fresh){display='0.';fresh=false}else if(!display.includes('.'))display+='.'}
+function oper(o){if(err)return;const c=parseFloat(display);
+  if(op&&!fresh){if(op==='÷'&&c===0)return showErr();const r=calc(stored,c,op);addTape(stored,op,c,r);stored=r;display=fmt(r)}
+  else if(!op)stored=c;
+  op=o;fresh=true}
+function equals(){if(err||op===null||stored===null)return;const c=parseFloat(display);if(op==='÷'&&c===0)return showErr();
+  const r=calc(stored,c,op);addTape(stored,op,c,r);display=fmt(r);stored=null;op=null;fresh=true}
+const pct=()=>{if(err)return;display=fmt(parseFloat(display)/100);fresh=true};
+const neg=()=>{if(err||display==='0')return;display=display.startsWith('-')?display.slice(1):'-'+display};
+function back(){if(err)return resetAll();if(fresh)return;const n=display.slice(0,-1);display=(n===''||n==='-')?'0':n}
+const keys=[['AC','func',resetAll],['⌫','func',back],['%','func',pct],['÷','op',()=>oper('÷')],
+['7','digit',()=>digit('7')],['8','digit',()=>digit('8')],['9','digit',()=>digit('9')],['×','op',()=>oper('×')],
+['4','digit',()=>digit('4')],['5','digit',()=>digit('5')],['6','digit',()=>digit('6')],['−','op',()=>oper('−')],
+['1','digit',()=>digit('1')],['2','digit',()=>digit('2')],['3','digit',()=>digit('3')],['+','op',()=>oper('+')],
+['±','func',neg],['0','digit',()=>digit('0')],['.','digit',dot],['=','eq',equals]];
+keys.forEach(([l,t,f])=>{const b=document.createElement('button');b.className='k '+t;b.textContent=l;b.dataset.l=l;b.onclick=()=>{vib(12);f();render()};$('pad').appendChild(b)});
+$('clr').onclick=()=>{tape=[];render()};
+$('thm').onclick=()=>{theme=THEMES[theme].next.toLowerCase();vib(12);render()};
+$('lines').onclick=e=>{const d=e.target.closest('[data-i]');if(!d)return;vib(12);display=tape[d.dataset.i].result;err=false;fresh=false;anim=false;render()};
+$('shr').onclick=async()=>{if(!tape.length)return toast('Nothing to share yet');const t='TallyRoll tape\n\n'+tape.map(x=>x.text).join('\n');
+  try{if(navigator.share)await navigator.share({text:t});else{await navigator.clipboard.writeText(t);toast('Tape copied')}}catch(e){}};
+function render(){
+  document.documentElement.dataset.t=theme;$('tc').content=THEMES[theme].bar;$('thm').textContent=THEMES[theme].next;
+  try{localStorage.setItem(KEY,JSON.stringify({tape,theme}))}catch(e){}
+  const v=$('val');v.textContent=display;v.className='val'+(err?' err':'')+(anim?' pop':'');
+  v.style.fontSize=err?'':Math.max(36,72-Math.max(0,display.length-8)*6)+'px';
+  $('pend').textContent=(op&&stored!==null)?`${fmt(stored)} ${op}`:'\u00a0';
+  const L=$('lines');
+  L.innerHTML=tape.length?tape.map((t,i)=>`<div class="l${anim&&i===tape.length-1?' new':''}" data-i="${i}">${t.text}</div>`).join(''):'<div class="empty">Your calculations will print here</div>';
+  L.scrollTop=L.scrollHeight;anim=false;$('clr').hidden=!tape.length;
+  document.querySelectorAll('.op').forEach(b=>b.classList.toggle('on',op===b.dataset.l&&fresh));
+}
+const map={'*':'×','/':'÷','-':'−','+':'+'};
+document.addEventListener('keydown',e=>{const k=e.key;
+  if(/^[0-9]$/.test(k))digit(k);else if(k==='.')dot();else if(map[k])oper(map[k]);
+  else if(k==='Enter'||k==='=')equals();else if(k==='Backspace')back();else if(k==='Escape')resetAll();else if(k==='%')pct();else return;
+  e.preventDefault();render()});
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
